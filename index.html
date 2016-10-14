@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simplechat Demo</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script language="javascript">
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                    results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
+        function getFormattedDate(unix_timestamp)
+        {
+            var date;
+            if(unix_timestamp)
+                date = new Date(unix_timestamp*1000);
+            else
+                date = new Date();
+            var hours = date.getHours();
+            var minutes = "0" + date.getMinutes();
+            var seconds = "0" + date.getSeconds();
+            var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+            return formattedTime;
+        }
+
+        function api(method,parameters) {
+            parameters['method'] = method;
+            $.ajax('api.php', {
+                'data': JSON.stringify(parameters),
+                'type': 'POST',
+                'processData': false,
+                'contentType': 'application/json',
+                success: function(response) {
+                    data = JSON.parse(response)
+                    if(data.status == 1)
+                    {
+                        if(method == 'getNewMessages')
+                        {
+                            for(i = 0; i < data.messages.length;i++)
+                            {
+                                message = JSON.parse(data.messages[i]);
+                                $('#messages').append("[" + getFormattedDate(message.timestamp) + "] " + message.name + ": " + message.content + "<br>");
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        var name
+        function getName()
+        {
+            name = prompt("Please enter your name", "Luke Skywalker");
+            api('createUser',{name:name})
+        }
+
+        function getNewMessages()
+        {
+            api('getNewMessages',{})
+        }
+
+        function sendMessage()
+        {
+            api('sendMessage',{content:document.getElementById('content').value, receiverId:getParameterByName('receiverId')});
+            $('#messages').append("[" + getFormattedDate(0) + "] " + name + ": " + document.getElementById('content').value + "<br>")
+        }
+
+
+        setInterval(getNewMessages, 3000);
+    </script>
+</head>
+
+<body onload="getName()">
+<input type="text" id="content" placeholder="Type a message here"><input value="Send" type="button" onclick="sendMessage();">
+<div id="messages">
+
+</div>
+</body>
+</html>
