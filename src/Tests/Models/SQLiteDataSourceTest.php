@@ -9,8 +9,6 @@
 
 namespace Simplechat\Tests\Models;
 
-use Simplechat\Models\UserModel;
-use Simplechat\Models\MessageModel;
 use Simplechat\Models\SQLiteDataSource;
 
 
@@ -46,13 +44,12 @@ class SQLiteDataSourceTest extends \PHPUnit_Extensions_Database_TestCase
     public function testReadOne()
     {
         $controller = new SQLiteDataSource();
-        $controller->connect();
 
-        $result = $controller->readOne(new UserModel(array()),1);
-        $this->assertEquals(array("userId" => 1,"name" => "Obi-Wan Kenobi"),$result->getAsArray());
+        $result = $controller->readOne("users","userId",1);
+        $this->assertEquals(array("userId" => 1,"name" => "Obi-Wan Kenobi", 0 => 1, 1 => 'Obi-Wan Kenobi'),$result);
 
-        $result = $controller->readOne(new MessageModel(array()),1);
-        $this->assertEquals(array("messageId" => 1,"content" => "We'll pay you two thousand now, plus fifteen when we reach Alderaan.","timestamp"=>1476361555, "senderId" => 1, "receiverId" => 2, "displayed" => 0),$result->getAsArray());
+        $result = $controller->readOne("messages","messageId",1);
+        $this->assertEquals(array("messageId" => 1,"content" => "We'll pay you two thousand now, plus fifteen when we reach Alderaan.","timestamp"=>1476361555, "senderId" => 1, "receiverId" => 2, "displayed" => 0, 0 => 1, 1 => "We'll pay you two thousand now, plus fifteen when we reach Alderaan.",2 => 1476361555, 3 => 1, 4 => 2, 5 => 0),$result);
     }
 
     /**
@@ -61,13 +58,12 @@ class SQLiteDataSourceTest extends \PHPUnit_Extensions_Database_TestCase
     public function testReadBy()
     {
         $controller = new SQLiteDataSource();
-        $controller->connect();
 
-        $result = $controller->readBy(new UserModel(array()),array("name" => "Obi-Wan Kenobi"));
-        $this->assertEquals(array("userId" => 1,"name" => "Obi-Wan Kenobi"),$result[0]->getAsArray());
+        $result = $controller->readBy("users",array("name" => "Obi-Wan Kenobi"));
+        $this->assertEquals(array("userId" => 1,"name" => "Obi-Wan Kenobi", 0 => 1, 1 => 'Obi-Wan Kenobi'),$result[0]);
 
-        $result = $controller->readBy(new MessageModel(array()),array("displayed" => 0));
-        $this->assertEquals(array("messageId" => 1,"content" => "We'll pay you two thousand now, plus fifteen when we reach Alderaan.","timestamp"=>1476361555, "senderId" => 1, "receiverId" => 2, "displayed" => 0),$result[0]->getAsArray());
+        $result = $controller->readBy("messages",array("displayed" => 0));
+        $this->assertEquals(array("messageId" => 1,"content" => "We'll pay you two thousand now, plus fifteen when we reach Alderaan.","timestamp"=>1476361555, "senderId" => 1, "receiverId" => 2, "displayed" => 0, 0 => 1, 1 => "We'll pay you two thousand now, plus fifteen when we reach Alderaan.",2 => 1476361555, 3 => 1, 4 => 2, 5 => 0),$result[0]);
     }
 
     /**
@@ -76,12 +72,11 @@ class SQLiteDataSourceTest extends \PHPUnit_Extensions_Database_TestCase
     public function testCreate()
     {
         $controller = new SQLiteDataSource();
-        $controller->connect();
 
-        $result = $controller->create(new UserModel(array("name" => "Stephan Hawking")));
+        $result = $controller->create("users",array("name" => "Stephan Hawking"));
         $this->assertGreaterThan(0,$result);
 
-        $result = $controller->create(new MessageModel(array("content" => "Seventeen? Okay, you guys got yourselves a ship. We'll be ready when you are. Docking Bay 94.","timestamp"=>1476361565, "senderId" => 2, "receiverId" => 1, "displayed" => 0)));
+        $result = $controller->create("messages",array("content" => "Seventeen? Okay, you guys got yourselves a ship. We'll be ready when you are. Docking Bay 94.","timestamp"=>1476361565, "senderId" => 2, "receiverId" => 1, "displayed" => 0));
         $this->assertGreaterThan(0,$result);
     }
 
@@ -91,12 +86,11 @@ class SQLiteDataSourceTest extends \PHPUnit_Extensions_Database_TestCase
     public function testUpdate()
     {
         $controller = new SQLiteDataSource();
-        $controller->connect();
 
-        $result = $controller->update(new UserModel(array("userId" => 1,"name" => "Neil Degrasse Tyson")));
+        $result = $controller->update("users","userId",(array("userId" => 1,"name" => "Neil Degrasse Tyson")));
         $this->assertTrue($result);
 
-        $result = $controller->update(new MessageModel(array("messageId" => 1,"displayed" => 1)));
+        $result = $controller->update("messages","messageId",array("messageId" => 1,"displayed" => 1));
         $this->assertTrue($result);
 
     }

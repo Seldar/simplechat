@@ -10,23 +10,44 @@
 namespace Simplechat\Tests\Models;
 
 use Simplechat\Models\MessageModel;
+use Simplechat\Models\SQLiteDataSource;
 
 /**
  * Class MessageModelTest
  * @package Simplechat\Tests\Models
  */
-class MessageModelTest extends \PHPUnit_Framework_TestCase
+class MessageModelTest extends \PHPUnit_Extensions_Database_TestCase
 {
+    /**
+     * Connecting to database
+     * @return \PHPUnit_Extensions_Database_DB_IDatabaseConnection
+     */
+    public function getConnection()
+    {
+        $pdo = new \PDO('sqlite:db/simplechat.db');
+        return $this->createDefaultDBConnection($pdo, 'db/simplechat.db');
+    }
+
+    /**
+     * Creating fixture
+     * @return \PHPUnit_Extensions_Database_DataSet_IDataSet
+     */
+    public function getDataSet()
+    {
+        return $this->createFlatXMLDataSet('db/simplechat-seed.xml');
+    }
+
     /**
      * test for __construct and initArr methods
      */
     public function testInitArr()
     {
-        $controller = new MessageModel(array("messageId" => 1,"content" => "We'll pay you two thousand now, plus fifteen when we reach Alderaan.","timestamp"=>1476361555, "senderId" => 1, "receiverId" => 2, "displayed" => 0));
-        $this->assertEquals(array("messageId" => 1,"content" => "We'll pay you two thousand now, plus fifteen when we reach Alderaan.","timestamp"=>1476361555, "senderId" => 1, "receiverId" => 2, "displayed" => 0),$controller->getAsArray());
-
-        $controller->initArr(array("content" => "Seventeen? Okay, you guys got yourselves a ship. We'll be ready when you are. Docking Bay 94.","timestamp"=>1476361565, "senderId" => 2, "receiverId" => 1, "displayed" => 0));
-        $this->assertEquals(array("content" => "Seventeen? Okay, you guys got yourselves a ship. We'll be ready when you are. Docking Bay 94.","timestamp"=>1476361565, "senderId" => 2, "receiverId" => 1, "displayed" => 0),$controller->getAsArray());
+        $controller = MessageModel::createFromArray(array("content" => "Seventeen? Okay, you guys got yourselves a ship. We'll be ready when you are. Docking Bay 94.","timestamp"=>1476361565, "senderId" => 2, "receiverId" => 1, "displayed" => 0),new SQLiteDataSource());
+        $result = $controller->toArray();
+        $messageId = $result['messageId'];
+        unset($result['messageId']);
+        $this->assertEquals(array("content" => "Seventeen? Okay, you guys got yourselves a ship. We'll be ready when you are. Docking Bay 94.","timestamp"=>1476361565, "senderId" => 2, "receiverId" => 1, "displayed" => 0),$result);
+        $this->assertGreaterThan(0,$messageId);
     }
 
     /**
@@ -34,7 +55,7 @@ class MessageModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetDisplayed()
     {
-        $controller = new MessageModel(array());
+        $controller = new MessageModel();
         $controller->setDisplayed(1);
         $this->assertEquals(1,$controller->getDisplayed());
     }
@@ -44,7 +65,7 @@ class MessageModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetSenderId()
     {
-        $controller = new MessageModel(array());
+        $controller = new MessageModel();
         $controller->setSenderId(1);
         $this->assertEquals(1,$controller->getSenderId());
     }

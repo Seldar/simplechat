@@ -33,7 +33,6 @@ class ChatController
      */
     public function __construct(IDataSource $db) {
         $this->db = $db;
-        $this->db->connect();
     }
 
 
@@ -44,7 +43,8 @@ class ChatController
      */
     public function createUser($name)
     {
-        return $this->db->create(new UserModel(array("name" => $name)));
+        $user = UserModel::createFromArray(array("name" => $name),$this->db);
+        return $user->getUserId();
     }
 
     /**
@@ -56,17 +56,16 @@ class ChatController
      */
     public function sendMessage($content, $senderId, $receiverId)
     {
-        return $this->db->create(
-            new MessageModel(
-                array(
-                    "content" => $content,
-                    "timestamp"=>time(),
-                    "senderId" => $senderId,
-                    "receiverId" => $receiverId,
-                    "displayed" => 0
-                )
-            )
-        );
+        $message = MessageModel::createFromArray(array(
+            "content" => $content,
+            "timestamp"=>time(),
+            "senderId" => $senderId,
+            "receiverId" => $receiverId,
+            "displayed" => 0
+        ),
+            $this->db);
+        return $message->getMessageId();
+
     }
 
     /**
@@ -76,14 +75,14 @@ class ChatController
      */
     public function getNewMessages($receiverId)
     {
-        $result = $this->db->readBy(new MessageModel(array()),array("receiverId" => $receiverId,"displayed" => 0));
+        $result = MessageModel::readBy(array("receiverId" => $receiverId,"displayed" => 0),$this->db);
         $response = array();
         foreach($result as $message)
         {
             $message->setDisplayed(1);
-            $this->db->update($message);
-            $user = $this->db->readOne(new UserModel(array()),$message->getSenderId());
-            $data = $message->getAsArray();
+            $message->update($this->db);
+            $user = UserModel::readById($message->getSenderId(),$this->db);
+            $data = $message->toArray();
             $data['name'] = $user->getName();
             $response[] = json_encode($data);
         }

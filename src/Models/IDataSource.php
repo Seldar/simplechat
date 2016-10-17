@@ -25,32 +25,35 @@ interface IDataSource
 
     /**
      * All DataSources should implement reading from the datasource.
-     * @param IModel $model
+     * @param string $tableName
+     * @param string $primaryKey
      * @param integer $primaryId
-     * @return IModel
+     * @return Model
      */
-    public function readOne(IModel $model, $primaryId);
+    public function readOne($tableName,$primaryKey, $primaryId);
 
     /**
      * All DataSources should implement reading with custom conditions from the datasource.
-     * @param IModel $model
+     * @param string $tableName
      * @param array $conditions
      * @return array
      */
-    public function readBy(IModel $model, $conditions);
+    public function readBy($tableName, $conditions);
 
     /**
      * All DataSources should implement creating from the datasource.
-     * @param IModel $model
+     * @param string $tableName
+     * @param array $array
      * @return mixed
      */
-    public function create(IModel $model);
+    public function create($tableName,$array);
 
     /**
      * All DataSources should implement update from the datasource.
-     * @param IModel $model
+     * @param string $tableName
+     * @param string $primaryKey
+     * @param array $array
      * @return mixed
      */
-    public function update(IModel $model);
-
+    public function update($tableName,$primaryKey,$array);
 }

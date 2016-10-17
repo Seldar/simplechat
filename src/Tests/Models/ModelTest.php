@@ -21,7 +21,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetTableName()
     {
-        $stub = $this->getMockForAbstractClass('Simplechat\Models\Model',array(array()));
+        $stub = $this->getMockForAbstractClass('Simplechat\Models\Model',array());
         $reflection         = new \ReflectionClass($stub);
         $reflectionProperty = $reflection->getProperty("tableName");
         $reflectionProperty->setAccessible(true);
@@ -35,7 +35,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetPrimaryKey()
     {
-        $stub = $this->getMockForAbstractClass('Simplechat\Models\Model',array(array()));
+        $stub = $this->getMockForAbstractClass('Simplechat\Models\Model',array());
         $reflection         = new \ReflectionClass($stub);
         $reflectionProperty = $reflection->getProperty("primaryKey");
         $reflectionProperty->setAccessible(true);
@@ -44,18 +44,4 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("testPrimaryKey", $stub->getPrimaryKey());
     }
 
-    /**
-     * test getField method
-     */
-    public function testGetField()
-    {
-        $stub = $this->getMockForAbstractClass('Simplechat\Models\Model',array(array()));
-        $reflection         = new \ReflectionClass($stub);
-        $reflectionProperty = $reflection->getProperty("primaryKey");
-        $reflectionProperty->setAccessible(true);
-        $reflectionProperty->setValue($stub,"testPrimaryKey");
-
-        $this->assertEquals("testPrimaryKey", $stub->getField("primaryKey"));
-        $this->assertEquals("", $stub->getField("test"));
-    }
 }

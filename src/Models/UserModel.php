@@ -14,7 +14,7 @@ namespace Simplechat\Models;
  * Class to handle User entity
  * @package Simplechat\Models
  */
-class UserModel extends Model
+class UserModel extends Model implements IModelCRUD
 {
     /**
      * primary key user id
@@ -30,30 +30,88 @@ class UserModel extends Model
 
     /**
      * UserModel constructor.
-     * @param array $data
+     * Initializing properties
      */
-    public function __construct(array $data)
+    public function __construct()
     {
-        parent::__construct($data);
         $this->tableName = "users";
         $this->primaryKey = "userId";
     }
 
     /**
      * initilize with an array.
-     * @param array $user User array to initiate model with
+     * @param array $array User array to initiate model with
+     * @param IDataSource $datasource datasource to initiate with
+     * @return UserModel
      */
-    public function initArr($user)
+    public static function createFromArray($array,IDataSource $datasource)
     {
-        $this->userId = isset($user['userId']) ? $user['userId'] : null;
-        $this->name =  isset($user['name']) ? $user['name'] : null;
+        $obj = new static();
+        $array['userId'] = $datasource->create($obj->getTableName(),$array);
+        $obj->arrayToProperties($array);
+        return $obj;
+    }
+
+    /**
+     * update current object in the datasource.
+     * @param IDatasource $datasource
+     * @return mixed
+     */
+    public function update(IDataSource $datasource)
+    {
+        return $datasource->update($this->getTableName(),$this->getPrimaryKey(),$this->toArray());
+    }
+
+    /**
+     * read a row from datasource using primary key
+     * @param int $id
+     * @param IDataSource $datasource
+     * @return UserModel
+     */
+    public static function readById($id, IDataSource $datasource)
+    {
+        $obj = new static();
+        $array = $datasource->readOne($obj->getTableName(),$obj->getPrimaryKey(), $id);
+        $obj->arrayToProperties($array);
+        return $obj;
+    }
+
+    /**
+     * read one or more rows using custom condition
+     * @param array $conditions
+     * @param IDataSource $datasource
+     * @return array
+     */
+    public static function readBy($conditions, IDataSource $datasource)
+    {
+        $response = array();
+        $obj = new static();
+        $result = $datasource->readBy($obj->getTableName(), $conditions);
+        foreach($result as $array)
+        {
+            $obj->arrayToProperties($array);
+            $response[] = clone $obj;
+        }
+
+        return $response;
+    }
+
+    /**
+     * update property values with the given array
+     * @param $array
+     * @return void
+     */
+    public function arrayToProperties($array)
+    {
+        $this->name =  isset($array['name']) ? $array['name'] : null;
+        $this->userId =  isset($array['userId']) ? $array['userId'] : null;
     }
 
     /**
      * get the model data as an array.
      * @return array;
      */
-    public function getAsArray()
+    public function toArray()
     {
         $array = array();
         if($this->userId)
@@ -81,4 +139,21 @@ class UserModel extends Model
         $this->name = $name;
     }
 
+    /**
+     * getter for field userId
+     * @return string
+     */
+    public function getUserId()
+    {
+        return $this->userId;
+    }
+
+    /**
+     * setter for field userId
+     * @param $userId
+     */
+    public function setUserId($userId)
+    {
+        $this->userId = $userId;
+    }
 }

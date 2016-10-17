@@ -9,24 +9,45 @@
 
 namespace Simplechat\Tests\Models;
 
+use Simplechat\Models\SQLiteDataSource;
 use Simplechat\Models\UserModel;
 
 /**
  * Class UserModelTest
  * @package Simplechat\Tests\Models
  */
-class UserModelTest extends \PHPUnit_Framework_TestCase
+class UserModelTest extends \PHPUnit_Extensions_Database_TestCase
 {
+    /**
+     * Connecting to database
+     * @return \PHPUnit_Extensions_Database_DB_IDatabaseConnection
+     */
+    public function getConnection()
+    {
+        $pdo = new \PDO('sqlite:db/simplechat.db');
+        return $this->createDefaultDBConnection($pdo, 'db/simplechat.db');
+    }
+
+    /**
+     * Creating fixture
+     * @return \PHPUnit_Extensions_Database_DataSet_IDataSet
+     */
+    public function getDataSet()
+    {
+        return $this->createFlatXMLDataSet('db/simplechat-seed.xml');
+    }
+
     /**
      * test for initArr and __construct methods
      */
     public function testInitArr()
     {
-        $controller = new UserModel(array("userId" => 2, "name" => "Isaac Newton"));
-        $this->assertEquals(array("userId" => 2, "name" => "Isaac Newton"),$controller->getAsArray());
-
-        $controller->initArr(array("userId" => 1, "name" => "Stephan Hawking"));
-        $this->assertEquals(array("userId" => 1, "name" => "Stephan Hawking"),$controller->getAsArray());
+        $controller = UserModel::createFromArray(array("name" => "Stephan Hawking"), new SQLiteDataSource());
+        $result = $controller->toArray();
+        $userId = $result['userId'];
+        unset($result['userId']);
+        $this->assertEquals(array("name" => "Stephan Hawking"),$result);
+        $this->assertGreaterThan(0,$userId);
     }
 
     /**

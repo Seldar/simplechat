@@ -15,7 +15,7 @@ namespace Simplechat\Models;
  * Class to define datasource entities
  * @package Simplechat\Models
  */
-abstract class Model implements IModel
+abstract class Model
 {
     /**
      * name of the table that this model represents
@@ -30,63 +30,36 @@ abstract class Model implements IModel
     protected $primaryKey;
 
     /**
-     * Model constructor.
-     * When model is initiated, it can be filled with array data.
-     * @param array $data
-     */
-    public function __construct($data)
-    {
-        $this->initArr($data);
-    }
-
-    /**
      * get the table name of the model.
-     * @return string;
+     * @return string
      */
-    function getTableName()
+    public function getTableName()
     {
         return $this->tableName;
     }
 
     /**
      * get the primary key of the models table.
-     * @return string;
+     * @return string
      */
-    function getPrimaryKey()
+    public function getPrimaryKey()
     {
         return $this->primaryKey;
     }
 
     /**
-     * get a specific field from the model.
-     * @param string $fieldName name of the field to return
-     * @return mixed;
+     * get model properties as an array.
+     * @return array
      */
-    public function getField($fieldName){
-        try {
-            return $this->{$fieldName};
-        } catch (\Exception $e) {
-            return "";
-        }
-    }
+    abstract public function toArray();
 
     /**
-     * get the model data as an object.
-     * @return object;
+     * update property values with the given array
+     * @param $array
+     * @return void
      */
-    public function getAsObject(){
-        return (Object)$this->getAsArray();
-    }
+    abstract public function arrayToProperties($array);
 
-    /**
-     * get the model data as an array.
-     * @return array;
-     */
-    abstract public function getAsArray();
 
-    /**
-     * initilize with an array.
-     * @param array $model Model array to initiate model with
-     */
-    abstract public function initArr($model);
+
 }

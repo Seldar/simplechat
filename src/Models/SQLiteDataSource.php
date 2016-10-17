@@ -15,8 +15,18 @@ namespace Simplechat\Models;
  * Class to handle SQLite connections
  * @package Simplechat\Models
  */
-class SQLiteDataSource extends DataSource
+class SQLiteDataSource implements IDataSource
 {
+    /**
+     * database resource.
+     * @var mixed
+     */
+    private $db;
+
+    public function __construct()
+    {
+        $this->connect();
+    }
 
     /**
      * connecting to sqlite datasource.
@@ -25,34 +35,33 @@ class SQLiteDataSource extends DataSource
     public function connect()
     {
         $this->db = new \SQLite3('db/simplechat.db');
-
     }
 
     /**
-     * Read a specific row from SQLite database and return an IModel.
-     * @param IModel $model
+     * Read a specific row from SQLite database and return as array.
+     * @param string $tableName
+     * @param string $primaryKey
      * @param integer $primaryId
-     * @return IModel
+     * @return array
      */
-    public function readOne(IModel $model, $primaryId)
+    public function readOne($tableName,$primaryKey, $primaryId)
     {
-        $query = 'SELECT * FROM ' . $model->getTableName() . " WHERE " . $model->getPrimaryKey() . " = :userId" ;
+        $query = 'SELECT * FROM ' . $tableName . " WHERE " . $primaryKey . " = :userId" ;
         $stmt = $this->db->prepare($query);
         $stmt->bindValue(':userId', $primaryId, SQLITE3_INTEGER);
         $result = $stmt->execute();
-        $model->initArr($result->fetchArray());
-        return $model;
+        return $result->fetchArray();
     }
 
     /**
-     * All DataSources should implement reading with custom conditions from the datasource.
-     * @param IModel $model
+     * Read one or more rows with custom conditions from the datasource.
+     * @param string $tableName
      * @param array $conditions
      * @return array
      */
-    public function readBy(IModel $model, $conditions)
+    public function readBy($tableName, $conditions)
     {
-        $query = 'SELECT * FROM ' . $model->getTableName() . " WHERE ";
+        $query = 'SELECT * FROM ' . $tableName . " WHERE ";
         $queryArr = array();
         foreach($conditions as $key => $value)
         {
@@ -68,21 +77,20 @@ class SQLiteDataSource extends DataSource
         $response = array();
         while($returnData = $result->fetchArray())
         {
-            $model->initArr($returnData);
-            $response[] = clone $model;
+            $response[] = $returnData;
         }
         return $response;
     }
 
     /**
-     * Create a new row in the database for the given IModel.
-     * @param IModel $model
-     * @return mixed
+     * Create a new row in the database for the given table name and row data.
+     * @param string $tableName
+     * @param array $array
+     * @return int
      */
-    public function create(IModel $model)
+    public function create($tableName,$array)
     {
-        $array = $model->getAsArray();
-        $query = "INSERT INTO " . $model->getTableName() . " (" . implode(",",array_keys($array)) . ") VALUES (:" . implode(",:",array_keys($array)) . ")";
+        $query = "INSERT INTO " . $tableName . " (" . implode(",",array_keys($array)) . ") VALUES (:" . implode(",:",array_keys($array)) . ")";
         $stmt = $this->db->prepare($query);
         foreach($array as $key => $value)
         {
@@ -95,19 +103,20 @@ class SQLiteDataSource extends DataSource
 
     /**
      * Update a specific row in the database for the given IModel.
-     * @param IModel $model
-     * @return mixed
+     * @param string $tableName
+     * @param string $primaryKey
+     * @param array $array
+     * @return bool
      */
-    public function update(IModel $model)
+    public function update($tableName,$primaryKey,$array)
     {
-        $array = $model->getAsArray();
-        $query = "UPDATE " .$model->getTableName() . " SET ";
+        $query = "UPDATE " .$tableName . " SET ";
         $queryArr = array();
         foreach($array as $key => $value)
         {
             $queryArr[] = $key . " = :" . $key;
         }
-        $query .= implode(",", $queryArr) . " WHERE " . $model->getPrimaryKey() . " = :" . $model->getPrimaryKey() . "";
+        $query .= implode(",", $queryArr) . " WHERE " . $primaryKey . " = :" . $primaryKey . "";
         $stmt = $this->db->prepare($query);
         foreach($array as $key => $value)
         {
