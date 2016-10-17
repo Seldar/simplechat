@@ -22,4 +22,4 @@ $ composer install
 Usage
 -----
 
-You can consume api.php to implement necessary behavior. You can also check out the test cases defined in src/Tests 
+You can consume api.php to implement necessary behavior. There is also a simple client which demonstrates how to consume the api in index.html. You can also check out the test cases defined in src/Tests.
