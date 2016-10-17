@@ -23,6 +23,9 @@ class SQLiteDataSource implements IDataSource
      */
     private $db;
 
+    /**
+     * SQLiteDataSource constructor.
+     */
     public function __construct()
     {
         $this->connect();

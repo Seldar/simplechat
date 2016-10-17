@@ -48,6 +48,65 @@ abstract class Model
     }
 
     /**
+     *  create an object and save it to datasource with an array.
+     * @param array $array User array to initiate model with
+     * @param IDataSource $datasource datasource to initiate with
+     * @return Model
+     */
+    public static function createFromArray($array,IDataSource $datasource)
+    {
+        $obj = new static();
+        $array[$obj->getPrimaryKey()] = $datasource->create($obj->getTableName(),$array);
+        $obj->arrayToProperties($array);
+        return $obj;
+    }
+
+    /**
+     * read a row from datasource using primary key
+     * @param int $id
+     * @param IDataSource $datasource
+     * @return Model
+     */
+    public static function readById($id, IDataSource $datasource)
+    {
+        $obj = new static();
+        $array = $datasource->readOne($obj->getTableName(),$obj->getPrimaryKey(), $id);
+        $obj->arrayToProperties($array);
+        return $obj;
+    }
+
+    /**
+     * read one or more rows using custom condition
+     * @param array $conditions
+     * @param IDataSource $datasource
+     * @return array
+     */
+    public static function readBy($conditions, IDataSource $datasource)
+    {
+        $response = array();
+        $obj = new static();
+        $result = $datasource->readBy($obj->getTableName(), $conditions);
+        foreach($result as $array)
+        {
+            $obj->arrayToProperties($array);
+            $response[] = clone $obj;
+        }
+
+        return $response;
+    }
+
+    /**
+     * update current object in the datasource.
+     * @param IDatasource $datasource
+     * @return mixed
+     */
+    public function update(IDataSource $datasource)
+    {
+        return $datasource->update($this->getTableName(),$this->getPrimaryKey(),$this->toArray());
+    }
+
+
+    /**
      * get model properties as an array.
      * @return array
      */
@@ -59,7 +118,4 @@ abstract class Model
      * @return void
      */
     abstract public function arrayToProperties($array);
-
-
-
 }
